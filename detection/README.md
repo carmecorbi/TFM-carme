@@ -13,7 +13,7 @@ Original detection annotations are converted to the **YOLO format**, which uses 
 
 The conversion involves transforming bounding boxes from the standard `(x, y, width, height)` format — where `(x, y)` is the **top-left corner** — to YOLO format, where coordinates represent the **center of the box**: `(x_center = (x + width / 2) / image_width, y_center = (y + height / 2) / image_height, width = width / image_width, height = height / image_height)`
 
-The original annotations from the SoccerNet Tracking dataset (`det.txt` and `gt.txt`) are parsed and converted using the scripts available in the [`pre-processing`](https://github.com/carmecorbi/TFM-carme/tree/main/detection/pre-processing) folder:
+The original annotations from the SoccerNet Tracking dataset (`det.txt` and `gt.txt`) are parsed and converted using the scripts available in the [pre-processing](https://github.com/carmecorbi/TFM-carme/tree/main/detection/pre-processing) folder:
 
 - `labelling.py`: generates YOLO annotations for the **joint detector** (ball + person)
 - `labelling_ball.py`: generates YOLO annotations for the **ball-only detector**
