@@ -80,3 +80,15 @@ print("Mean average precision at IoU=0.75:", results.box.map75)
 print("Precision:", results.box.p)
 print("Recall:", results.box.r)
 ```
+## 📊 Results
+
+Below are the evaluation metrics obtained for the joint detection model (ball + person classes) under different training setups:
+
+| Model            | Class  | AP   | AP@0.5 | F1 Score | Precision | Recall | mAP@0.5 |
+|------------------|--------|------|--------|----------|-----------|--------|---------|
+| **Pre-Trained**  | Person | 0.49 | 0.89   | 0.88     | 0.87      | 0.88   | 0.53    |
+|                  | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | -       |
+| **Fully Unfrozen** | Person | 0.67 | 0.95   | 0.95     | 0.93      | 0.97   | 0.71    |
+|                  | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | -       |
+| **Backbone Frozen** | Person | 0.69 | 0.98   | 0.94     | 0.93      | 0.96   | 0.70    |
+|                  | Ball   | 0.16 | 0.43   | 0.51     | 0.68      | 0.41   | -       |
