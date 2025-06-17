@@ -27,7 +27,7 @@ Each sequence directory contains the following:
 
 The first preprocessing step is to create a **validation set**, which is **not** part of the original SoccerNet Tracking dataset. This set is built from an extended dataset called **GameState Reconstruction**, which is an enriched version of SoccerNet Tracking with more sequences and annotations in a slightly different format.
 
-- The GameState Reconstruction dataset includes **58 sequences**, each 30 seconds long (750 frames).
+- The GameState Reconstruction validation set includes **58 sequences**, each 30 seconds long (750 frames).
 - These sequences are split into:
 - **38 sequences** for the extended **training set** (from 2 matches)
 - **20 sequences** for the new **validation set** (from 1 match)
