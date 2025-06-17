@@ -23,4 +23,25 @@ Each script creates `.txt` files in YOLO format, one per image frame.
 
 ## 🚀 Training with Ultralytics YOLO
 
-The [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) framework is used to train the models.
+The [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) framework is used to train the models. Here is a generic example of a training script using the Python API:
+
+```python
+from ultralytics import YOLO
+# Load a pretrained YOLO model checkpoint
+model = YOLO('path/to/pretrained_model.pt')
+
+# Train the model
+results = model.train(
+    data="path/to/dataset.yaml",    # dataset configuration file
+    epochs=50,                      # number of training epochs
+    batch=16,                      # batch size
+    imgsz=640,                     # input image size (pixels)
+    device=0,                      # GPU device index or 'cpu'
+    patience=15,                   # early stopping patience
+    project='training_output',     # output directory
+    freeze=0,                     # number of layers to freeze initially
+    classes=[0],                   # list of class IDs to train on
+    plots=True                     # enable training plots
+)
+
+```
