@@ -82,27 +82,63 @@ print("Recall:", results.box.r)
 ```
 ## 📊 Results
 
-Below are the evaluation metrics obtained for the joint detection model (ball + person classes) under different training setups:
+### Training and Evaluation Setup
 
-| Model            | Class  | AP   | AP@0.5 | F1 Score | Precision | Recall | mAP@0.5 |
-|------------------|--------|------|--------|----------|-----------|--------|---------|
-| **Pre-Trained**  | Person | 0.49 | 0.89   | 0.88     | 0.87      | 0.88   | 0.53    |
-|                  | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | 0.53       |
-| **Fully Unfrozen** | Person | 0.67 | 0.95   | 0.95     | 0.93      | 0.97   | 0.71    |
-|                  | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | 0.71      |
-| **Backbone Frozen** | Person | 0.69 | 0.98   | 0.94     | 0.93      | 0.96   | 0.70    |
-|                  | Ball   | 0.16 | 0.43   | 0.51     | 0.68      | 0.41   | 0.70      |
+- **Model for Joint and Person Detectors:** YOLO12s  
+- **Training Parameters:**  
+  - Epochs: 50  
+  - Early Stopping: 10  
+  - Image size: 1024 x 1024  
+  - Optimizer: SGD  
+  - Learning rate: 0.001  
+  - Default Ultralytics augmentations  
 
-| Model           | AP   | AP@0.5 | F1 Score | Precision | Recall |
-|-----------------|------|--------|----------|-----------|--------|
-| **Fully Unfrozen** | 0.68 | 0.98   | 0.96     | 0.97      | 0.95   |
-| **Backbone Frozen** | 0.65 | 0.97   | 0.95     | 0.95      | 0.95   |
+- **Evaluation Parameters:**  
+  - IoU threshold: 0.7  
+  - Confidence threshold: 0.001  
 
-| Model                              | AP   | AP@0.5 | F1 Score | Precision | Recall |
-|----------------------------------|------|--------|----------|-----------|--------|
-| **YOLO12s Fully Unfrozen**       | 0.14 | 0.39   | 0.49     | 0.60      | 0.41   |
-| **YOLO12s Backbone Frozen**       | 0.17 | 0.47   | 0.54     | 0.62      | 0.47   |
-| **YOLO12m Backbone Frozen**       | 0.18 | 0.48   | 0.55     | 0.63      | 0.49   |
-| **YOLO12x Backbone Frozen + Half Resolution** | 0.05 | 0.17 | 0.27 | 0.46 | 0.19 |
-| **YOLO12m + Focal Loss**           | 0.13 | 0.38   | 0.46     | 0.58      | 0.38   |
+---
+
+### Joint Detector (Ball + Person)
+
+| Model             | Class  | AP   | AP@0.5 | F1 Score | Precision | Recall | mAP@0.5 |
+|-------------------|--------|------|--------|----------|-----------|--------|---------|
+| Pre-Trained       | Person | 0.49 | 0.89   | 0.88     | 0.87      | 0.88   | 0.53    |
+|                   | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | 0.53    |
+| **Fully Unfrozen**| Person | **0.67** | **0.95** | **0.95** | **0.93**  | **0.97** | **0.71** |
+|                   | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | 0.71    |
+| Backbone Frozen   | Person | 0.69 | 0.98   | 0.94     | 0.93      | 0.96   | 0.70    |
+|                   | Ball   | **0.16** | **0.43** | **0.51** | **0.68**  | **0.41** | 0.70    |
+
+---
+
+### Person Detector
+
+| Model             | AP   | AP@0.5 | F1 Score | Precision | Recall |
+|-------------------|------|--------|----------|-----------|--------|
+| Fully Unfrozen    | **0.68** | **0.98** | **0.96** | **0.97**  | 0.95   |
+| Backbone Frozen   | 0.65 | 0.97   | 0.95     | 0.95      | **0.95** |
+
+---
+
+### Ball Detector
+
+| Model                                     | AP   | AP@0.5 | F1 Score | Precision | Recall |
+|-------------------------------------------|------|--------|----------|-----------|--------|
+| YOLO12s Fully Unfrozen                    | 0.14 | 0.39   | 0.49     | 0.60      | 0.41   |
+| YOLO12s Backbone Frozen                   | 0.17 | 0.47   | 0.54     | 0.62      | 0.47   |
+| YOLO12m Backbone Frozen                   | **0.18** | **0.48** | **0.55** | **0.63** | **0.49** |
+| YOLO12x Backbone Frozen + Half Resolution | 0.05 | 0.17   | 0.27     | 0.46      | 0.19   |
+| YOLO12m + Focal Loss                      | 0.13 | 0.38   | 0.46     | 0.58      | 0.38   |
+
+---
+
+### Metrics Description
+
+- **AP (Average Precision):** Overall precision across different recall levels.  
+- **AP@0.5:** Average precision at IoU threshold.  
+- **F1 Score:** Harmonic mean of precision and recall, balances false positives and false negatives.  
+- **Precision:** Fraction of true positive detections among all positive detections.  
+- **Recall:** Fraction of true positive detections among all actual positives.  
+- **mAP@0.5:** Mean Average Precision across all classes at IoU=0.5.
 
