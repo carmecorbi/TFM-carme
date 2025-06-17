@@ -5,14 +5,14 @@ from scipy.ndimage import gaussian_filter
 from collections import defaultdict
 import argparse
 
-# --- PARSEJAR ARGUMENTS ---
-parser = argparse.ArgumentParser(description="Generar heatmaps per seqüència")
-parser.add_argument("--seqname", type=str, required=True, help="Nom de la seqüència, ex: SNMOT-060")
+# --- PARSE ARGUMENTS ---
+parser = argparse.ArgumentParser(description="Generate heatmaps per sequence")
+parser.add_argument("--seqname", type=str, required=True, help="Name of the sequence, e.g.: SNMOT-060")
 args = parser.parse_args()
 
 seqname = args.seqname
 
-# --- CONFIGURACIÓ DE PATHS I PARÀMETRES ---
+# --- CONFIGURE PATHS AND PARAMETERS ---
 base_path = f"/data-fast/data-server/ccorbi/SN-Tracking/tracking/test/{seqname}"
 gt_file = os.path.join(base_path, "gt/gt.txt")
 seqinfo_file = os.path.join(base_path, "gameinfo.ini")
@@ -26,7 +26,7 @@ image_size = (1080, 1920)
 os.makedirs(output_dir_left, exist_ok=True)
 os.makedirs(output_dir_right, exist_ok=True)
 
-# --- LLEGIR SEQINFO.INI ---
+# --- READ SEQINFO.INI ---
 tracklet_teams = {}
 with open(seqinfo_file, "r") as f:
     for line in f:
@@ -40,7 +40,7 @@ with open(seqinfo_file, "r") as f:
                 elif "team right" in info:
                     tracklet_teams[tid] = "right"
 
-# --- AGRUPAR ANOTACIONS PER FRAME ---
+# --- GROUP ANNOTATIONS BY FRAME ---
 frame_annotations = defaultdict(list)
 with open(gt_file, "r") as f:
     for line in f:
@@ -52,7 +52,7 @@ with open(gt_file, "r") as f:
         bbox = list(map(int, parts[2:6]))
         frame_annotations[frame].append((tid, bbox))
 
-# --- CREAR I GUARDAR HEATMAPS PER FRAME ---
+# --- CREATE AND SAVE HEATMAPS PER FRAME ---
 with open(log_file, "w") as log_f:
     for frame in sorted(frame_annotations.keys()):
         heatmap_left = np.zeros(image_size, dtype=np.float32)
@@ -86,6 +86,6 @@ with open(log_file, "w") as log_f:
         cv2.imwrite(out_path_r, img_r)
         log_f.write(out_path_r + "\n")
 
-print("Procés complet!")
+print("Process complete!")
 
 
