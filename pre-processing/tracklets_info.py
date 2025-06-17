@@ -1,10 +1,10 @@
 import os
 from collections import defaultdict
 
-# Path base de training
+# Base path for training
 base_path = "/data-fast/data-server/ccorbi/SN-Tracking/tracking/train"
 
-# Iterar per cada seqüència
+# Iterate over each sequence
 for seq_name in os.listdir(base_path):
     seq_path = os.path.join(base_path, seq_name)
     gt_path = os.path.join(seq_path, "gt", "gt.txt")
@@ -12,7 +12,7 @@ for seq_name in os.listdir(base_path):
     output_ini_path = os.path.join(seq_path, "tracklets_info.ini")
 
     if not os.path.isfile(gt_path) or not os.path.isfile(gameinfo_path):
-        print(f"✗ Falten fitxers a: {seq_name}")
+        print(f"✗ Missing files in: {seq_name}")
         continue
 
     # Map trackletID_x -> (tracklet_index, description)
@@ -24,7 +24,7 @@ for seq_name in os.listdir(base_path):
             tracklet_id = int(key.split("_")[1])
             tracklet_map[tracklet_id] = (key, value.strip())
 
-    # Agrupar frames per track_id
+    # Group frames by track_id
     track_frames = defaultdict(list)
     for line in open(gt_path, "r"):
         parts = line.strip().split(",")
@@ -34,7 +34,7 @@ for seq_name in os.listdir(base_path):
         track_id = int(parts[1])
         track_frames[track_id].append(frame_id)
 
-    # Escriure tracklets_info.ini
+    # Write tracklets_info.ini
     with open(output_ini_path, "w") as out_f:
         out_f.write("[Tracklets]\n")
         for track_id, frames in sorted(track_frames.items()):
@@ -46,7 +46,7 @@ for seq_name in os.listdir(base_path):
             end = frames[-1]
             duration = len(frames)
 
-            # Buscar gaps (discontinuïtats)
+            # Find gaps (discontinuities)
             gaps = []
             for i in range(1, len(frames)):
                 if frames[i] != frames[i - 1] + 1:
@@ -54,11 +54,11 @@ for seq_name in os.listdir(base_path):
                     gap_end = frames[i] - 1
                     gaps.append((gap_start, gap_end))
 
-            # Format dels gaps: "missing: 14–17; 100–102"
+            # Format gaps string: "missing: 14–17; 100–102"
             if gaps:
                 gaps_str = "; ".join(f"{g[0]}–{g[1]}" for g in gaps)
                 out_f.write(f"{tracklet_key}={description} | frames: {duration}, start: {start}, end: {end}, missing: {gaps_str}\n")
             else:
                 out_f.write(f"{tracklet_key}={description} | frames: {duration}, start: {start}, end: {end}\n")
 
-    print(f"✓ Creat tracklets_info.ini amb gaps per {seq_name}")
+    print(f"✓ Created tracklets_info.ini with gaps for {seq_name}")
