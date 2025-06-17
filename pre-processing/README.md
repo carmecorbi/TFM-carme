@@ -2,7 +2,7 @@
 # Preprocessing SoccerNet Tracking Dataset
 ## 📚 Dataset Overview
 
-The **SoccerNet Tracking** dataset is designed for multi-object tracking tasks in professional soccer matches. It consists of short, annotated video clips captured from the **main broadcast camera** during the **2019 Swiss Super League** season. All videos are recorded in **1080p Full HD resolution** at **25 frames per second**.
+The [**SoccerNet Tracking**](https://github.com/SoccerNet/sn-tracking)  dataset is designed for multi-object tracking tasks in professional soccer matches. It consists of short, annotated video clips captured from the **main broadcast camera** during the **2019 Swiss Super League** season. All videos are recorded in **1080p Full HD resolution** at **25 frames per second**.
 
 Each video clip spans **30 seconds**, which corresponds to **750 frames** per sequence.
 
@@ -25,7 +25,7 @@ Each sequence directory contains the following:
 
 ## 🛠️ Preprocessing Step 1: Creating the Validation Set
 
-The first preprocessing step is to create a **validation set**, which is **not** part of the original SoccerNet Tracking dataset. This set is built from an extended dataset called **GameState Reconstruction**, which is an enriched version of SoccerNet Tracking with more sequences and annotations in a slightly different format.
+The first preprocessing step is to create a **validation set**, which is **not** part of the original SoccerNet Tracking dataset. This set is created using the [**GameState Reconstruction**](https://github.com/SoccerNet/sn-gamestate), which is an enriched version of SoccerNet Tracking with more sequences and annotations in a slightly different format.
 
 - The GameState Reconstruction validation set includes **58 sequences**, each 30 seconds long (750 frames). These sequences are split into:
   - **38 sequences** for the extended **training set** (from 2 matches)
