@@ -9,18 +9,18 @@ IMAGE_WIDTH = 1920
 IMAGE_HEIGHT = 1080
 MAX_FRAME_ID = 750
 
-# Recorre cada subcarpeta de la seqüència
+# Iterate over each subfolder of the sequence
 for sequence in os.listdir(SRC_ROOT):
     sequence_path = os.path.join(SRC_ROOT, sequence)
     if not os.path.isdir(sequence_path):
         continue
 
-    print(f"Processant {sequence}")
+    print(f"Processing {sequence}")
 
-    # Llegeix gameinfo.ini per determinar quin tracklet és la pilota
+    # Read gameinfo.ini to determine which tracklet is the ball
     ini_path = os.path.join(sequence_path, "gameinfo.ini")
     config = configparser.ConfigParser()
-    config.optionxform = str  # Preserva les majúscules de les claus
+    config.optionxform = str  # Preserve key case sensitivity
     config.read(ini_path)
 
     ball_ids = set()
@@ -36,11 +36,10 @@ for sequence in os.listdir(SRC_ROOT):
                 except ValueError:
                     print(f"  -> ERROR converting tracklet_num for key: {key}")
 
-
-    # Llegeix gt.txt
+    # Read gt.txt
     gt_path = os.path.join(sequence_path, "gt", "gt.txt")
     if not os.path.isfile(gt_path):
-        print(f"  gt.txt no trobat per {sequence}, saltant.")
+        print(f"  gt.txt not found for {sequence}, skipping.")
         continue
 
     frame_data = defaultdict(list)
@@ -62,7 +61,7 @@ for sequence in os.listdir(SRC_ROOT):
             if frame_id > MAX_FRAME_ID:
                 continue
 
-            # Calcular coordenades normalitzades YOLO format
+            # Calculate normalized YOLO format coordinates
             x_center = (x + w / 2) / IMAGE_WIDTH
             y_center = (y + h / 2) / IMAGE_HEIGHT
             w_norm = w / IMAGE_WIDTH
@@ -71,7 +70,7 @@ for sequence in os.listdir(SRC_ROOT):
             class_id = 1 if tracklet_id in ball_ids else 0
             frame_data[frame_id].append(f"{class_id} {x_center:.6f} {y_center:.6f} {w_norm:.6f} {h_norm:.6f}")
 
-    # Escriu els fitxers de sortida
+    # Write output files
     out_dir = os.path.join(DST_ROOT, sequence)
     os.makedirs(out_dir, exist_ok=True)
 
@@ -81,4 +80,4 @@ for sequence in os.listdir(SRC_ROOT):
         with open(out_path, "w") as f:
             f.write("\n".join(frame_data.get(i, [])))
 
-print("Procés completat.")
+print("Process completed.")
