@@ -39,6 +39,6 @@ The following scripts are responsible for generating the required files for thes
 
 - `detections.py` → generates `det/det.txt`
 - `tracking.py` → generates `gt/gt.txt`
-- `tracklets_info.py` → generates `gameinfo.ini`
+- `game_info.py` → generates `gameinfo.ini`
 
 These scripts reformat the GameState Reconstruction annotations into the same structure used by the original SoccerNet Tracking dataset, enabling seamless integration with existing tracking pipelines.
