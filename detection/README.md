@@ -46,3 +46,37 @@ results = model.train(
 )
 
 ```
+## 🧪 Evaluation with Ultralytics YOLO
+
+The Ultralytics YOLO framework also provides an easy way to evaluate trained models.
+
+Below is a generic example of an evaluation script using the Python API:
+
+```python
+
+from ultralytics import YOLO
+
+# Load the trained YOLO model weights
+model = YOLO('path/to/best_model.pt')
+
+# Dataset config file
+DATASET_PATH = "path/to/dataset.yaml"
+
+# Run evaluation (validation) on the specified data split
+results = model.val(
+    data=DATASET_PATH,    # dataset YAML file
+    split='train',        # dataset split to evaluate ('train', 'val', or 'test')
+    conf=0.01,            # confidence threshold for detections
+    device=0,             # device to run evaluation on (GPU id or 'cpu')
+    classes=[0, 1]        # list of class IDs to evaluate on
+)
+
+# Print key evaluation metrics
+print("Average precision:", results.box.ap)
+print("Average precision at IoU=0.50:", results.box.ap50)
+print("F1 score:", results.box.f1)
+print("Mean average precision at IoU=0.50:", results.box.map50)
+print("Mean average precision at IoU=0.75:", results.box.map75)
+print("Precision:", results.box.p)
+print("Recall:", results.box.r)
+```
