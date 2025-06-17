@@ -11,7 +11,7 @@ Detection is divided into two categories:
 ## ⚙️ Preprocessing
 Original detection annotations are converted to the **YOLO format**, which uses normalized bounding boxes:All values are **normalized** with respect to image width and height, and there is **no header** in YOLO label files. Each line corresponds to one object in one image.
 
-The conversion involves transforming bounding boxes from the standard `(x, y, width, height)` format — where `(x, y)` is the **top-left corner** — to YOLO format, where coordinates represent the **center of the box**: x_center = (x + width / 2) / image_width, y_center = (y + height / 2) / image_height, width = width / image_width, height = height / image_height
+The conversion involves transforming bounding boxes from the standard `(x, y, width, height)` format — where `(x, y)` is the **top-left corner** — to YOLO format, where coordinates represent the **center of the box**: `(x_center = (x + width / 2) / image_width, y_center = (y + height / 2) / image_height, width = width / image_width, height = height / image_height)`
 
 The original annotations from the SoccerNet Tracking dataset (`det.txt` and `gt.txt`) are parsed and converted using the scripts available in the [`pre-processing`](https://github.com/carmecorbi/TFM-carme/tree/main/detection/pre-processing) folder:
 
