@@ -16,3 +16,8 @@ Each video clip spans **30 seconds**, which corresponds to **750 frames** per se
   - 49 sequences
   - Also collected from **3 different matches**
 
+Each sequence directory contains the following:
+- `img1/`: folder with all 750 video frames (30s at 25 FPS)
+- `det/det.txt`: file with gt detections in the format: frame_id, -1, x, y, w, h, confidence_score, -1, -1, -1
+- `gt/gt.txt`: ground truth tracking annotations in the format: frame_id, track_id, x, y, w, h, confidence_score, -1, -1, -1
+-  `gameinfo.ini`: semantic metadata about each tracklet, mapping `trackletID` to object type and team.
