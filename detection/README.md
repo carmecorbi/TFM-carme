@@ -20,3 +20,7 @@ The original annotations from the SoccerNet Tracking dataset (`det.txt` and `gt.
 - `labelling_person.py`: generates YOLO annotations for the **person-only detector**
 
 Each script creates `.txt` files in YOLO format, one per image frame.
+
+## 🚀 Training with Ultralytics YOLO
+
+The [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) framework is used to train the models.
