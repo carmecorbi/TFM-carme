@@ -23,7 +23,7 @@ Each sequence directory contains the following:
 -  `gameinfo.ini`: semantic metadata about each tracklet, mapping `trackletID` to object type and team.
 
 
-## 🛠️ Preprocessing Step 1: Creating the Validation Set
+## Creating the Validation Set
 
 The first preprocessing step is to create a **validation set**, which is **not** part of the original SoccerNet Tracking dataset. This set is created using the [**GameState Reconstruction**](https://github.com/SoccerNet/sn-gamestate), which is an enriched version of SoccerNet Tracking with more sequences and annotations in a slightly different format.
 
