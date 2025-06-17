@@ -23,7 +23,8 @@ Each script creates `.txt` files in YOLO format, one per image frame.
 
 ## 🚀 Training with Ultralytics YOLO
 
-The [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) framework is used to train the models. Here is a generic example of a training script using the Python API:
+The [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) framework is used to train the models.Before training, make sure to install the necessary dependencies. The recommended way is to follow the official Ultralytics installation instructions.
+Here is a generic example of a training script using the Python API:
 
 ```python
 from ultralytics import YOLO
