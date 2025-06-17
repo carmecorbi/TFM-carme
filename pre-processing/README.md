@@ -8,4 +8,11 @@ Each video clip spans **30 seconds**, which corresponds to **750 frames** per se
 
 
 ## 📁 Dataset Structure
+- **Training Set**
+  - 57 sequences
+  - Collected from **3 different matches**
+
+- **Test Set**
+  - 49 sequences
+  - Also collected from **3 different matches**
 
