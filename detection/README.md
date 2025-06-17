@@ -92,3 +92,17 @@ Below are the evaluation metrics obtained for the joint detection model (ball + 
 |                  | Ball   | 0.06 | 0.17   | 0.27     | 0.47      | 0.19   | 0.71      |
 | **Backbone Frozen** | Person | 0.69 | 0.98   | 0.94     | 0.93      | 0.96   | 0.70    |
 |                  | Ball   | 0.16 | 0.43   | 0.51     | 0.68      | 0.41   | 0.70      |
+
+| Model           | AP   | AP@0.5 | F1 Score | Precision | Recall |
+|-----------------|------|--------|----------|-----------|--------|
+| **Fully Unfrozen** | 0.68 | 0.98   | 0.96     | 0.97      | 0.95   |
+| **Backbone Frozen** | 0.65 | 0.97   | 0.95     | 0.95      | 0.95   |
+
+| Model                              | AP   | AP@0.5 | F1 Score | Precision | Recall |
+|----------------------------------|------|--------|----------|-----------|--------|
+| **YOLO12s Fully Unfrozen**       | 0.14 | 0.39   | 0.49     | 0.60      | 0.41   |
+| **YOLO12s Backbone Frozen**       | 0.17 | 0.47   | 0.54     | 0.62      | 0.47   |
+| **YOLO12m Backbone Frozen**       | 0.18 | 0.48   | 0.55     | 0.63      | 0.49   |
+| **YOLO12x Backbone Frozen + Half Resolution** | 0.05 | 0.17 | 0.27 | 0.46 | 0.19 |
+| **YOLO12m + Focal Loss**           | 0.13 | 0.38   | 0.46     | 0.58      | 0.38   |
+
