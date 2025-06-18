@@ -69,4 +69,5 @@ To enable this, several significant modifications were made:
    │   ├── val/
    │   └── test/
 Each modality (image, label, heatmap) is synchronized by frame index, and the dataset files (train_ball.txt, val_ball.txt, test_ball.txt) are used to list all image paths per split. These lists serve as input to the dataloader and are referenced in the YOLO [`custom.data`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/config/custom.data) configuration file.
+- YOLO Configuration (.cfg): The original configuration file was adapted (`yolov3-original2.cfg`) to accept a 5-channel input instead of 3. This modification updates the number of input channels in the first convolutional layer from 3 to 5. 
 
