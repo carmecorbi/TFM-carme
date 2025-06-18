@@ -88,6 +88,8 @@ Training parameters are defined using a custom Python class `Args`. Bellow are t
 - `checkpoint_interval`: Frequency (in epochs) to save model checkpoints.
 - `evaluation_interval`: Frequency (in epochs) to evaluate the model on the validation set.
 - `multiscale_training`: Enables multi-scale training.
-- `iou_thres`: IoU threshold 
+- `iou_thres`: IoU threshold for evaluation metrics.
+- `conf_thres`: Confidence threshold for object predictions.
+- `nms_thres`: Non-Maximum Suppression (NMS) IoU threshold. 
 
 
