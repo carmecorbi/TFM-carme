@@ -26,11 +26,13 @@ python organize_heatmaps.py
 Each 5-frame sequence (left and right heatmaps) is passed through a 3D custom convolutional neural network to extract temporal-spatial patterns. These patterns capture team formations, player motion, and interactions that are useful for ball detection.
 
 Key details:
-- Input: a stack of 5 grayscale heatmaps (5 x H x w) per team.
+- Input: a stack of 5 grayscale heatmaps (5 x H x W) per team.
 - Architecture: two identical 3D CNNs (one for the left team, one for the right), sharing weights.
 - Output: one 2D feature map per team that encodes contextual information from the 5-frame window.
 
 The CNN is implemented in [`custom_cnn.py`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/pytorchyolo/custom_cnn.py).
 
+### 3.Multimodal Fusion for YOLO Input
+The two encoded heatmaps (one per team) are concatenated with the original RGB frame along the channel dimension. This results in a 5-channel input tensor: H x W x 5 --> [R,G,B, Left Heatmap, Right Team Heatmap]
 
-4. Multimodal Fusion for YOLO Input
+
