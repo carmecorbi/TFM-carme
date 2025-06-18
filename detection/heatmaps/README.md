@@ -68,3 +68,5 @@ To enable this, several significant modifications were made:
    │   │   └── <sequence_name>/                 # YOLO-format .txt files per frame
    │   ├── val/
    │   └── test/
+Each modality (image, label, heatmap) is synchronized by frame index, and the dataset files (train_ball.txt, val_ball.txt, test_ball.txt) are used to list all image paths per split. These lists serve as input to the dataloader and are referenced in the YOLO [`custom.data`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/config/custom.data) configuration file.
+
