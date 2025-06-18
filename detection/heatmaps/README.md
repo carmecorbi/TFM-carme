@@ -41,31 +41,31 @@ To enable this, several significant modifications were made:
 - Custom Dataset Implementation:
   A new dataset class (OwnDataset) was created to load and preprocess both RGB images and their corresponding      heatmaps.
 
-The dataset is organized as follows:
-
-```text
-/data-fast/data-server/ccorbi/ball/
-│
-├── heatmaps/
-│   ├── train/
-│   │   └── <sequence_name>/
-│   │       └── <frame_id>/                  # e.g. 000006 to 000750
-│   │           ├── left/                    # 5 heatmaps for team left
-│   │           └── right/                   # 5 heatmaps for team right
-│   ├── val/
-│   └── test/
-│
-├── images/
-│   ├── train/
-│   │   └── <sequence_name>/                 # All RGB frames (e.g. 000006.jpg)
-│   ├── val/
-│   └── test/
-│   ├── train_ball.txt                       # Contains relative paths to training images
-│   ├── val_ball.txt                         # Contains relative paths to validation images
-│   └── test_ball.txt                        # Contains relative paths to test images
-│
-├── labels/
-│   ├── train/
-│   │   └── <sequence_name>/                 # YOLO-format .txt files per frame
-│   ├── val/
-│   └── test/
+   The dataset is organized as follows:
+   
+   ```text
+   
+   │
+   ├── heatmaps/
+   │   ├── train/
+   │   │   └── <sequence_name>/
+   │   │       └── <frame_id>/                  # e.g. 000006 to 000750
+   │   │           ├── left/                    # 5 heatmaps for team left
+   │   │           └── right/                   # 5 heatmaps for team right
+   │   ├── val/
+   │   └── test/
+   │
+   ├── images/
+   │   ├── train/
+   │   │   └── <sequence_name>/                 # All RGB frames (e.g. 000006.jpg)
+   │   ├── val/
+   │   └── test/
+   │   ├── train_ball.txt                       # Contains relative paths to training images
+   │   ├── val_ball.txt                         # Contains relative paths to validation images
+   │   └── test_ball.txt                        # Contains relative paths to test images
+   │
+   ├── labels/
+   │   ├── train/
+   │   │   └── <sequence_name>/                 # YOLO-format .txt files per frame
+   │   ├── val/
+   │   └── test/
