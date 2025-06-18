@@ -17,6 +17,11 @@ This step is implemented in the script: `create_heatmaps.py`. Example usage:
 ```bash
 python create_heatmaps.py --seqname SNMOT-060
 ```
+To provide temporal information to the detector, heatmaps from the previous 5 frames are grouped per current frame. For each frame f, the correponding directory includes heatmaps from frame f-5 to f-1 for both teams. This step is implemented in the sript: `organize_heatmaps.py`. Example usage:
+
+```bash
+python organize_heatmaps.py
+```
    
 3. Temporal Encoding with 3D CNNs
 4. Multimodal Fusion for YOLO Input
