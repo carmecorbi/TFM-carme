@@ -6,5 +6,7 @@ The aim of this part of the project is to improve ball detection performance by 
 ## Pipeline Overview
 
 1. Player-wise Gaussian Heatmap Generation (per team)
-2. Temporal Encoding with 3D CNNs
-3. Multimodal Fusion for YOLO Input
+   Players annotations are converted into heatmaps to provide spatial context for the ball detector. For each     frame:
+   - 
+3. Temporal Encoding with 3D CNNs
+4. Multimodal Fusion for YOLO Input
