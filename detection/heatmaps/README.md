@@ -30,7 +30,7 @@ Key details:
 - Architecture: two identical 3D CNNs (one for the left team, one for the right), sharing weights.
 - Output: one 2D feature map per team that encodes contextual information from the 5-frame window.
 
-
+The CNN is implemented in [`custom_cnn.py`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/pytorchyolo/custom_cnn.py).
 
 
 4. Multimodal Fusion for YOLO Input
