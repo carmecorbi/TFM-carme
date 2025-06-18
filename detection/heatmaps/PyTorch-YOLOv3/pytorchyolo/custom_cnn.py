@@ -56,18 +56,3 @@ output = model(input_tensor)
 num_params = sum(p.numel() for p in model.parameters())
 print(f"Number of parameters: {num_params}")
 '''
-
-model = Temporal3DCNN()
-model.to("cpu")
-#input_model=torch.randn(1, 5, 1, 1080, 1020)
-# Entrada amb forma (B, T, C, H, W) → en aquest model es permuta a (B, C, T, H, W)
-summary(model,input_size=(1, 5, 1, 1080, 1920),device="cpu")
-
-'''
-output = model(input_model)
-dot = make_dot(output, params=dict(model.named_parameters()))
-
-# Desa'l com a imatge
-dot.format = "png"
-dot.render("temporal3dcnn_architecture")
-'''
