@@ -5,6 +5,7 @@ The aim of this part of the project is to improve ball detection performance by 
 
 ## Pipeline Overview
 1. **Player-wise Gaussian Heatmap Generation (per team)**
+   
    Player annotations are converted into heatmaps to provide spatial context for the ball detector.  
    For each frame:
    - Ground truth bounding boxes are converted into 2D Gaussian heatmaps.
