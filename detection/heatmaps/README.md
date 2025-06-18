@@ -70,4 +70,6 @@ To enable this, several significant modifications were made:
    │   └── test/
 Each modality (image, label, heatmap) is synchronized by frame index, and the dataset files (train_ball.txt, val_ball.txt, test_ball.txt) are used to list all image paths per split. These lists serve as input to the dataloader and are referenced in the YOLO [`custom.data`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/config/custom.data) configuration file.
 - YOLO Configuration (.cfg): The original configuration file was adapted (`yolov3-original2.cfg`) to accept a 5-channel input instead of 3. This modification updates the number of input channels in the first convolutional layer from 3 to 5. 
-
+- Pretrained Weight Adaptation: A custom method `load_darknet_weights2` was implemented to correctly load the original YOLOv3 pretrained weights into the modified architecture. Since the original weights are trained on 3-channel RGB inputs, two additional initialization strategies were explored to handle the extra heatmap channels:
+     - He initialization: the additional channels are randomly initialized using Kaiming normal initialization.
+     - Channel copying: values from existing RGB channels are duplicated into the new channels to preserve low-level structure.
