@@ -10,6 +10,7 @@ import sys
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
+import wandb
 
 from pytorchyolo.models import load_model
 from pytorchyolo.utils.logger import Logger
@@ -24,41 +25,26 @@ from pytorchyolo.test import _evaluate, _create_validation_data_loader
 from terminaltables import AsciiTable
 
 from torchsummary import summary
+def main():
+    conf_thresholds = [0.1, 0.01, 0.001]
+    nms_thresholds = [0.3, 0.5, 0.7]
 
+    for conf in conf_thresholds:
+        for nms in nms_thresholds:
+            args = Args()
+            args.conf_thres = conf
+            args.nms_thres = nms
+            # Update output file name dynamically
+            log_filename = f"validation_output_conf{conf}_nms{nms}.txt"
+            log_path = os.path.join(
+                "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline-validation",
+                log_filename
+            )
+            validate_only_with_logpath(args, log_path)
 
-def _create_data_loader(img_path, batch_size, img_size, n_cpu, multiscale_training=False):
-    """Creates a DataLoader for training.
-
-    :param img_path: Path to file containing all paths to training images.
-    :type img_path: str
-    :param batch_size: Size of each image batch
-    :type batch_size: int
-    :param img_size: Size of each image dimension for yolo
-    :type img_size: int
-    :param n_cpu: Number of cpu threads to use during batch generation
-    :type n_cpu: int
-    :param multiscale_training: Scale images to different sizes randomly
-    :type multiscale_training: bool
-    :return: Returns DataLoader
-    :rtype: DataLoader
-    """
-    dataset = ListDataset(
-        img_path,
-        img_size=img_size,
-        multiscale=multiscale_training,
-        transform=AUGMENTATION_TRANSFORMS)
-    dataloader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=n_cpu,
-        pin_memory=True,
-        collate_fn=dataset.collate_fn,
-        worker_init_fn=worker_seed_set)
-    return dataloader
-
-def validate_only(args):
-    log_file = open("validation_output_0001.txt", "w")
+# Slight modification of validate_only to accept a log file path
+def validate_only_with_logpath(args, log_path):
+    log_file = open(log_path, "w")
     sys.stdout = log_file
     sys.stderr = log_file
     print_environment_info()
@@ -75,7 +61,7 @@ def validate_only(args):
 
     model = load_model(args.model, args.pretrained_weights)
     model.to(device)
-    model.eval()  # Important: set model to evaluation mode
+    model.eval()
 
     mini_batch_size = model.hyperparams['batch'] // model.hyperparams['subdivisions']
 
@@ -83,11 +69,11 @@ def validate_only(args):
         valid_path,
         mini_batch_size,
         model.hyperparams['height'],
-        n_cpu=0
+        n_cpu=args.n_cpu
     )
 
     print("\n---- Running validation ----")
-    metrics_output = _evaluate(
+    precision, recall, AP, f1, ap_class, avg_iou_loss, avg_obj_loss, avg_cls_loss, avg_total_loss = _evaluate(
         model,
         validation_dataloader,
         class_names,
@@ -98,44 +84,27 @@ def validate_only(args):
         verbose=args.verbose
     )
 
-    if metrics_output is not None:
-        precision, recall, AP, f1, ap_class = metrics_output
-        print("\n---- Evaluation Results ----")
-        print(f"Precision: {precision.mean():.4f}")
-        print(f"Recall:    {recall.mean():.4f}")
-        print(f"mAP:       {AP.mean():.4f}")
-        print(f"F1 Score:  {f1.mean():.4f}")
-
-        evaluation_metrics = [
-            ("validation/precision", precision.mean()),
-            ("validation/recall", recall.mean()),
-            ("validation/mAP", AP.mean()),
-            ("validation/f1", f1.mean())]
-        logger.list_of_scalars_summary(evaluation_metrics, 0)
+    print("\n---- Evaluation Results ----")
+    print(f"Precision: {precision.mean():.4f}")
+    print(f"Recall:    {recall.mean():.4f}")
+    print(f"mAP:       {AP.mean():.4f}")
+    print(f"F1 Score:  {f1.mean():.4f}")
 
     log_file.close()
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
-    print("Validation finished. Output saved to 'validation_output.txt'")
+
+
 class Args:
     def __init__(self):
         self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-original.cfg"
         self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom.data"
-        self.epochs = 30
         self.verbose = True
         self.n_cpu = 4
-        self.pretrained_weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/checkpoints_YOLOv3_3channels/yolov3_ckpt_27.pth"
-        self.checkpoint_interval = 3
-        self.evaluation_interval = 1
-        self.multiscale_training = False
+        self.pretrained_weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline/yolov3_ckpt_16.pth"
         self.iou_thres = 0.5
-        self.conf_thres = 0.0001
-        self.nms_thres = 0.5
         self.logdir = "logs"
         self.seed = 42
-def main():
-    args = Args()
-    validate_only(args)
 
 if __name__ == "__main__":
     main()

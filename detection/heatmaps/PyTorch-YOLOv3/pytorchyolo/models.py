@@ -465,17 +465,16 @@ def load_model(model_path, weights_path=None,init_mode='random'):
                           else "cpu")  # Select device for inference
     model = Darknet(model_path).to(device)
     print(device)
-    model.apply(weights_init_normal)
+    #model.apply(weights_init_normal)
 
     # If pretrained weights are specified, start from checkpoint or weight file
     if weights_path:
         if weights_path.endswith(".pth"):
             # Load checkpoint weights
-
             model.load_state_dict(torch.load(weights_path, map_location=device))
         else:
             # Load darknet weights
             #print('deviceeeee',device)
-            #model.load_darknet_weights(weights_path)
-            model.load_darknet_weights2(weights_path,init_mode=init_mode)
+            model.load_darknet_weights(weights_path)
+            #model.load_darknet_weights2(weights_path,init_mode=init_mode)
     return model

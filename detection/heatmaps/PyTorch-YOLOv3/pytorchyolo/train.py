@@ -68,7 +68,7 @@ def _create_data_loader(img_path, batch_size, img_size, n_cpu, multiscale_traini
 
 def run(args):
       # Redirect all prints to a file
-    log_file = open("YOLOv3-baseline.txt", "w")
+    log_file = open("YOLOv3-baseline-singleclass.txt", "w")
     sys.stdout = log_file
     sys.stderr = log_file  # Optional: also redirect errors
     print_environment_info()
@@ -105,14 +105,14 @@ def run(args):
 
     # Create output directories if missing
     os.makedirs("output", exist_ok=True)
-    os.makedirs("YOLOv3-baseline", exist_ok=True)
+    os.makedirs("YOLOv3-baseline-singleclass", exist_ok=True)
 
     # Get data configuration
     data_config = parse_data_config(args.data)
     train_path = data_config["train"]
     valid_path = data_config["valid"]
     class_names = load_classes(data_config["names"])
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('device',device)
 
     # ############
@@ -273,7 +273,7 @@ def run(args):
 
         # Save model to checkpoint file
         if epoch % args.checkpoint_interval == 0:
-            checkpoint_path = f"YOLOv3-baseline/yolov3_ckpt_{epoch}.pth"
+            checkpoint_path = f"YOLOv3-baseline-singleclass/yolov3_ckpt_{epoch}.pth"
             print(f"---- Saving checkpoint to: '{checkpoint_path}' ----")
             torch.save(model.state_dict(), checkpoint_path)
 
@@ -330,8 +330,8 @@ def run(args):
 
 class Args:
     def __init__(self):
-        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-original.cfg"
-        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom.data"
+        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass.cfg"
+        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom_singleclass.data"
         self.epochs = 50
         self.verbose = False
         self.n_cpu = 4

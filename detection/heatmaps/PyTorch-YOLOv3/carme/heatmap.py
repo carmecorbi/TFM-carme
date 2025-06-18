@@ -1,8 +1,8 @@
 import os
 import shutil
 
-origen_base = "/home-net/ccorbi/detection/heatmaps/heatmap_val"
-destinacio_base = "/data-fast/data-server/ccorbi/ball/heatmaps/val"
+origen_base = "/home-net/ccorbi/detection/heatmaps/heatmap_test"
+destinacio_base = "/data-fast/data-server/ccorbi/ball/heatmaps/test"
 
 seq_list = [seq for seq in os.listdir(origen_base) if os.path.isdir(os.path.join(origen_base, seq))]
 
