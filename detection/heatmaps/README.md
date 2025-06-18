@@ -44,7 +44,6 @@ To enable this, several significant modifications were made:
   The required folder structure is as follows:
 
    ```bash
-
 │
 ├── heatmaps/
 │   ├── train/
@@ -69,5 +68,5 @@ To enable this, several significant modifications were made:
 │   │   └── <sequence_name>/                 # YOLO-format .txt files per frame
 │   ├── val/
 │   └── test/
-````
+```
 
