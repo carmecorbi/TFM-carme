@@ -33,6 +33,6 @@ Key details:
 The CNN is implemented in [`custom_cnn.py`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/pytorchyolo/custom_cnn.py).
 
 ### 3.Multimodal Fusion for YOLO Input
-The two encoded heatmaps (one per team) are concatenated with the original RGB frame along the channel dimension. This results in a 5-channel input tensor: H x W x 5 --> [R,G,B, Left Heatmap, Right Team Heatmap]
+The two encoded heatmaps (one per team) are concatenated with the original RGB frame along the channel dimension. This results in a 5-channel input tensor: H x W x 5 → [R,G,B, Left Heatmap, Right Team Heatmap]
 
 
