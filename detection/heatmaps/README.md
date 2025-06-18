@@ -41,9 +41,10 @@ To enable this, several significant modifications were made:
 - Custom Dataset Implementation:
   A new dataset class (OwnDataset) was created to load and preprocess both RGB images and their corresponding      heatmaps.
 
-  The required folder structure is as follows:
+The dataset is organized as follows:
 
-   ```bash
+```text
+/data-fast/data-server/ccorbi/ball/
 │
 ├── heatmaps/
 │   ├── train/
@@ -68,5 +69,3 @@ To enable this, several significant modifications were made:
 │   │   └── <sequence_name>/                 # YOLO-format .txt files per frame
 │   ├── val/
 │   └── test/
-```
-
