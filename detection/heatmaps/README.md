@@ -45,7 +45,6 @@ To enable this, several significant modifications were made:
    
    ```text
    
-   │
    ├── heatmaps/
    │   ├── train/
    │   │   └── <sequence_name>/
