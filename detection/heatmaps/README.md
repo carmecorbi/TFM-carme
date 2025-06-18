@@ -38,7 +38,7 @@ The two encoded heatmaps (one per team) are concatenated with the original RGB f
 The fused input is passed to a modified YOLO detector capable of processing 5-channel inputs. The detection model is based on YOLOv3 implemented in PyTorch, adapted from the repository [https://github.com/eriklindernoren/PyTorch-YOLOv3](https://github.com/eriklindernoren/PyTorch-YOLOv3/tree/master) to support the additional heatmap channels.
 
 To enable this, several significant modifications were made:
-- Custom Dataset Implementation
+- Custom Dataset Implementation:
   A new dataset class (OwnDataset) was created to load and preprocess both RGB images and their corresponding      heatmaps. 
 
 
