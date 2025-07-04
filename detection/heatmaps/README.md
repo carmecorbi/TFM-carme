@@ -4,10 +4,8 @@
 The aim of this part of the project is to improve ball detection performance by incorporating spatial and temporal context from player positions. Instead of relying solely on RGB data, the system uses heatmaps derived from player annotations. These heatmaps are processed with a 3D convolutional network (CNN) and fused with the original video frames before being passed to a YOLO-based object detector.
 
 ## Pipeline Overview
-### 1. Player-wise Gaussian Heatmap Generation (per team)
 ![BallDetection1](https://github.com/user-attachments/assets/51860b96-cf8f-4c9a-b773-be53056c4845)
-
-
+### 1. Player-wise Gaussian Heatmap Generation (per team)
    Player annotations are converted into heatmaps to provide spatial context for the ball detector.  
    For each frame:
    - Ground truth bounding boxes are converted into 2D Gaussian heatmaps.
