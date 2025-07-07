@@ -70,5 +70,33 @@ The decoder produces a tensor of shape `[6,1,27,256]` where:
 We retain only the first 5 embeddings corresponding to the object queries. 
 
 ## Training
+Two different training configurations are available depending on whether player context is used:
+- Baseline (DETR only): Trains the original DETR model on our custom dataset, without player or team context:
+  ```bash
+  python main.py \
+  --coco_path /data-fast/data-server/ccorbi/ball_detr \
+  --batch_size 4 \
+  --num_workers 2 \
+  --device cuda:1 \
+  --output_dir "prova_baseline" \
+  --dataset_file own \
+  --epochs 50 \
+  --resume /home-net/ccorbi/detection/detr/detr/detr-r50-e632da11.pth \
+  --num_queries 5
+```
+- Player Context (DETR + Team/Player Embeddings): Trains the modified DETR model with support for team/player context and positional embeddings:
+```bash
+python main.py \
+  --coco_path /data-fast/data-server/ccorbi/ball_detr \
+  --batch_size 4 \
+  --num_workers 2 \
+  --device cuda:2 \
+  --output_dir "prova_players" \
+  --dataset_file players \
+  --epochs 50 \
+  --resume /home-net/ccorbi/detection/detr/detr/detr-r50-e632da11.pth \
+  --num_queries 5
+```
+
 
 ### Configuration Arguments
