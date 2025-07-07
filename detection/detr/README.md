@@ -31,7 +31,7 @@ Key Components:
   1. Load the original COCO image and annotations.
   2. Parse the sequence name and frame number from the image filename.
   3. Use the tracking data to retrieve player positions for that frame.
-  4. Add the player information under a new key in the `target dictionary`: `target["players"] = List[Dict[bbox, center, team]]`
+  4. Add the player information under a new key in the `target` dictionary: `target["players"] = List[Dict[bbox, center, team]]`
 
 
 Player bounding boxes (from both teams) are used to extract (x, y) center positions. Coordinates are normalized to [0, 1]. Passed through a linear layer to project into the same embedding space (256-d). 
