@@ -85,6 +85,7 @@ Two different training configurations are available depending on whether player 
   --num_queries 5
 ```
 - Player Context (DETR + Team/Player Embeddings): Trains the modified DETR model with support for team/player context and positional embeddings:
+
 ```bash
 python main.py \
   --coco_path /data-fast/data-server/ccorbi/ball_detr \
