@@ -4,13 +4,13 @@
 The aim of this part of the project is to improve ball detection performance by incorporating spatial and temporal context from player positions. Instead of relying solely on RGB data, the system uses heatmaps derived from player annotations. These heatmaps are processed with a 3D convolutional network (CNN) and fused with the original video frames before being passed to a YOLO-based object detector.
 
 ## Pipeline Overview
+![BallDetection1](https://github.com/user-attachments/assets/51860b96-cf8f-4c9a-b773-be53056c4845)
 ### 1. Player-wise Gaussian Heatmap Generation (per team)
-   
    Player annotations are converted into heatmaps to provide spatial context for the ball detector.  
    For each frame:
    - Ground truth bounding boxes are converted into 2D Gaussian heatmaps.
    - A separate heatmap is generated for each team (left and right).
-   - Variance of the Gaussian is proportional to the player’s bounding box size.
+   - Standard Deviation of the Gaussian is proportional to the player’s bounding box size.
    - Heatmaps are saved as grayscale PNG images.
 
 This step is implemented in the script: `create_heatmaps.py`. Example usage:
@@ -68,3 +68,28 @@ To enable this, several significant modifications were made:
    │   │   └── <sequence_name>/                 # YOLO-format .txt files per frame
    │   ├── val/
    │   └── test/
+Each modality (image, label, heatmap) is synchronized by frame index, and the dataset files (train_ball.txt, val_ball.txt, test_ball.txt) are used to list all image paths per split. These lists serve as input to the dataloader and are referenced in the YOLO [`custom.data`](https://github.com/carmecorbi/TFM-carme/blob/main/detection/heatmaps/PyTorch-YOLOv3/config/custom.data) configuration file.
+- YOLO Configuration (.cfg): The original configuration file was adapted (`yolov3-original2.cfg`) to accept a 5-channel input instead of 3. This modification updates the number of input channels in the first convolutional layer from 3 to 5.
+- Pretrained Weight Adaptation: A custom method `load_darknet_weights2` was implemented to correctly load the original YOLOv3 pretrained weights into the modified architecture. Since the original weights are trained on 3-channel RGB inputs, two additional initialization strategies were explored to handle the extra heatmap channels:
+     - He initialization: the additional channels are randomly initialized using Kaiming normal initialization.
+     - Channel copying: values from existing RGB channels are duplicated into the new channels to preserve low-level structure.
+ 
+## Training
+- `train.py` → Trains the original YOLOv3 architecture using standard RGB images (Baseline model)
+- `train2.py` → Trains the modified YOLOv3 model (5-channel input tensor)
+
+### Configuration Arguments
+Training parameters are defined using a custom Python class `Args`. Bellow are the main configurable options:
+- `model`: Path to the YOLOv3 `.cfg` model configuration file.
+- `data`: Path to the `.data` config file.
+- `epochs`: Number of training epochs.
+- `n_cpu`: Number of worker threads for data loading.
+- `pretrained_weights`: Path to `.weights` or `.pth` checkpoint to initalize the model.
+- `checkpoint_interval`: Frequency (in epochs) to save model checkpoints.
+- `evaluation_interval`: Frequency (in epochs) to evaluate the model on the validation set.
+- `multiscale_training`: Enables multi-scale training.
+- `iou_thres`: IoU threshold for evaluation metrics.
+- `conf_thres`: Confidence threshold for object predictions.
+- `nms_thres`: Non-Maximum Suppression (NMS) IoU threshold. 
+
+
