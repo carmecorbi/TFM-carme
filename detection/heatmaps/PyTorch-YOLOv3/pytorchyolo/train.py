@@ -54,7 +54,7 @@ def _create_data_loader(img_path, batch_size, img_size, n_cpu, multiscale_traini
         img_path,
         img_size=img_size,
         multiscale=multiscale_training,
-        transform=AUGMENTATION)
+        transform=AUGMENTATION_TRANSFORMS)
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -65,10 +65,55 @@ def _create_data_loader(img_path, batch_size, img_size, n_cpu, multiscale_traini
         worker_init_fn=worker_seed_set)
     return dataloader
 
+def evaluate_and_log(model, dataloader, class_names, split_name, epoch, args, log_losses=True):
+    precision, recall, AP, f1, _, iou_loss, obj_loss, cls_loss, total_loss = _evaluate(
+        model,
+        dataloader,
+        class_names,
+        img_size=model.hyperparams['height'],
+        iou_thres=args.iou_thres,
+        conf_thres=args.conf_thres,
+        nms_thres=args.nms_thres,
+        verbose=args.verbose
+    )
+
+    print(f"\n---- Evaluation on {split_name.upper()} ----")
+    table_data = [
+        ["Metric", "Value"],
+        ["Precision", precision.mean()],
+        ["Recall", recall.mean()],
+        ["mAP", AP.mean()],
+        ["F1", f1.mean()],
+    ]
+
+    log_dict = {
+        f"{split_name}/precision": precision.mean(),
+        f"{split_name}/recall": recall.mean(),
+        f"{split_name}/mAP": AP.mean(),
+        f"{split_name}/f1": f1.mean(),
+        "epoch": epoch
+    }
+
+    if log_losses:
+        table_data += [
+            [f"{split_name.capitalize()} IoU Loss", iou_loss],
+            [f"{split_name.capitalize()} Obj Loss", obj_loss],
+            [f"{split_name.capitalize()} Cls Loss", cls_loss],
+            [f"{split_name.capitalize()} Total Loss", total_loss],
+        ]
+        log_dict.update({
+            f"{split_name}/iou_loss": iou_loss,
+            f"{split_name}/obj_loss": obj_loss,
+            f"{split_name}/cls_loss": cls_loss,
+            f"{split_name}/total_loss": total_loss,
+        })
+
+    print(AsciiTable(table_data).table)
+    wandb.log(log_dict)
 
 def run(args):
       # Redirect all prints to a file
-    log_file = open("YOLOv3-baseline-singleclass.txt", "w")
+    log_file = open("YOLOv3-baseline-singleclass-augmentation.txt", "w")
     sys.stdout = log_file
     sys.stderr = log_file  # Optional: also redirect errors
     print_environment_info()
@@ -95,22 +140,23 @@ def run(args):
 
     logger = Logger(args.logdir)  # Tensorboard logger
     
-    wandb.init(project="YOLOv3-baseline", config=args)
+    wandb.init(project="YOLOv3-baseline-new", config=args)
     # Defineix mètriques per batch amb un step personalitzat
-    wandb.define_metric("batch/*", step_metric="batches_done")
+    wandb.define_metric("batch/*", step_metric="batches_global")
 
     # Defineix mètriques per epoch amb un step diferent
-    wandb.define_metric("epoch/*", step_metric="epoch")
-    wandb.define_metric("validation/*", step_metric="epoch")
+    for split in ["train", "validation", "test"]:
+        wandb.define_metric(f"{split}/*", step_metric="epoch")
 
     # Create output directories if missing
     os.makedirs("output", exist_ok=True)
-    os.makedirs("YOLOv3-baseline-singleclass", exist_ok=True)
+    os.makedirs("YOLOv3-baseline-singleclass-augmentation", exist_ok=True)
 
     # Get data configuration
     data_config = parse_data_config(args.data)
     train_path = data_config["train"]
     valid_path = data_config["valid"]
+    test_path = data_config["test"]
     class_names = load_classes(data_config["names"])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('device',device)
@@ -146,6 +192,12 @@ def run(args):
         model.hyperparams['height'],
         args.n_cpu)
 
+    test_dataloader = _create_validation_data_loader(
+        test_path,
+        mini_batch_size,
+        model.hyperparams['height'],
+        args.n_cpu)
+
     # ################
     # Create optimizer
     # ################
@@ -170,17 +222,18 @@ def run(args):
     # skip epoch zero, because then the calculations for when to evaluate/checkpoint makes more intuitive sense
     # e.g. when you stop after 30 epochs and evaluate every 10 epochs then the evaluations happen after: 10,20,30
     # instead of: 0, 10, 20
+    lr = model.hyperparams['learning_rate']
+    batches_global = 1
     for epoch in range(1, args.epochs+1):
         epoch_iou_loss = 0.0
         epoch_obj_loss = 0.0
         epoch_cls_loss = 0.0
         epoch_total_loss = 0.0
 
-
+        
         model.train()  # Set model to training mode
-     
         for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc=f"Training Epoch {epoch}")):
-            batches_done = len(dataloader) * epoch + batch_i
+            batches_done = len(dataloader) * (epoch-1) + batch_i
 
             imgs = imgs.to(device, non_blocking=True)
             targets = targets.to(device)
@@ -190,7 +243,6 @@ def run(args):
             loss, loss_components = compute_loss(outputs, targets, model)
 
             loss.backward()
-
             ###############
             # Run optimizer
             ###############
@@ -207,8 +259,7 @@ def run(args):
                     for threshold, value in model.hyperparams['lr_steps']:
                         if batches_done > threshold:
                             lr *= value
-                # Log the learning rate
-                #logger.scalar_summary("train/learning_rate", lr, batches_done)
+             
                 # Set learning rate
                 for g in optimizer.param_groups:
                     g['lr'] = lr
@@ -217,6 +268,8 @@ def run(args):
                 optimizer.step()
                 # Reset gradients
                 optimizer.zero_grad()
+            
+          
 
             # ############
             # Log progress
@@ -237,7 +290,8 @@ def run(args):
                 "batch/obj_loss": float(loss_components[1]),
                 "batch/class_loss": float(loss_components[2]),
                 "batch/loss": to_cpu(loss).item(),
-                "batches_done": batches_done 
+                "batch/learning_rate": lr,
+                "batches_global": batches_global 
         
             })
 
@@ -247,6 +301,8 @@ def run(args):
             epoch_total_loss += to_cpu(loss).item()
 
             model.seen += imgs.size(0)
+            
+            batches_global += 1 
 
 
         # #############
@@ -264,16 +320,16 @@ def run(args):
         print(f"Total Loss: {avg_total_loss:.4f}\n")
 
         wandb.log({
-            "epoch/iou_loss": avg_iou_loss,
-            "epoch/obj_loss": avg_obj_loss,
-            "epoch/class_loss": avg_cls_loss,
-            "epoch/total_loss": avg_total_loss,
+            "train/iou_loss": avg_iou_loss,
+            "train/obj_loss": avg_obj_loss,
+            "train/class_loss": avg_cls_loss,
+            "train/total_loss": avg_total_loss,
             "epoch": epoch 
         })
 
         # Save model to checkpoint file
         if epoch % args.checkpoint_interval == 0:
-            checkpoint_path = f"YOLOv3-baseline-singleclass/yolov3_ckpt_{epoch}.pth"
+            checkpoint_path = f"YOLOv3-baseline-singleclass-augmentation/yolov3_ckpt_{epoch}.pth"
             print(f"---- Saving checkpoint to: '{checkpoint_path}' ----")
             torch.save(model.state_dict(), checkpoint_path)
 
@@ -283,54 +339,20 @@ def run(args):
 
         if epoch % args.evaluation_interval == 0:
             print("\n---- Evaluating Model ----")
-            # Evaluate the model on the validation set
-            precision, recall, AP, f1, ap_class,avg_iou_loss, avg_obj_loss, avg_cls_loss, avg_total_loss = _evaluate(
-                model,
-                validation_dataloader,
-                class_names,
-                img_size=model.hyperparams['height'],
-                iou_thres=args.iou_thres,
-                conf_thres=args.conf_thres,
-                nms_thres=args.nms_thres,
-                verbose=args.verbose
-            )
-
-          
-        
-            print(AsciiTable([
-                ["Metric", "Value"],
-                ["Precision", precision.mean()],
-                ["Recall", recall.mean()],
-                ["mAP", AP.mean()],
-                ["F1", f1.mean()],
-                ["Val IoU Loss", avg_iou_loss],
-                ["Val Obj Loss", avg_obj_loss],
-                ["Val Cls Loss", avg_cls_loss],
-                ["Val Total Loss", avg_total_loss],
-            ]).table)
-
-            wandb.log({
-                "validation/precision": precision.mean(),
-                "validation/recall": recall.mean(),
-                "validation/mAP": AP.mean(),
-                "validation/f1": f1.mean(), 
-                "validation/val_iou_loss": avg_iou_loss,
-                "validation/val_obj_loss": avg_obj_loss,
-                "validation/val_cls_loss": avg_cls_loss,
-                "validation/val_total_loss": avg_total_loss,
-                "epoch": epoch 
-            })
+            evaluate_and_log(model, dataloader, class_names, "train", epoch, args, log_losses=False)
+            evaluate_and_log(model, validation_dataloader, class_names, "validation", epoch, args)
+            evaluate_and_log(model, test_dataloader, class_names, "test", epoch, args)
 
     wandb.finish()
 
     log_file.close()
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
-    print("Training finished. Output saved to 'training_output.txt'")
+
 
 class Args:
     def __init__(self):
-        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass.cfg"
+        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass_low.cfg"
         self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom_singleclass.data"
         self.epochs = 50
         self.verbose = False
@@ -348,5 +370,6 @@ class Args:
 def main():
     args = Args()
     run(args)
+    
 if __name__ == "__main__":
     main()

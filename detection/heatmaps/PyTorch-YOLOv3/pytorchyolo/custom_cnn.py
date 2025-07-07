@@ -10,12 +10,14 @@ class Temporal3DCNN(nn.Module):
 
         self.layer1 = nn.Sequential(
             nn.Conv3d(1,8,kernel_size=(3,3,3), padding=(1,1,1)), # (B,1,5,H,W) --> (B,8,5,H,W)
+            nn.BatchNorm3d(8),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(2,1,1),stride=(1,1,1)) # (B,8,5,H,W) --> (B,8,4,H,W)
         )
 
         self.layer2 = nn.Sequential(
             nn.Conv3d(8,16,kernel_size=(3,3,3), padding=(1,1,1)), # (B,8,4,H,W) --> (B,16,4,H,W)
+            nn.BatchNorm3d(16),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(2,1,1)), # (B,16,4,H,W) --> (B,16,2,H,W)
 
@@ -23,6 +25,7 @@ class Temporal3DCNN(nn.Module):
 
         self.layer3 = nn.Sequential(
             nn.Conv3d(16,32,kernel_size=(3,3,3), padding=(1,1,1)), # (B,16,2,H,W) --> (B,32,2,H,W)
+            nn.BatchNorm3d(32),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(2,1,1)), # (B,32,2,H,W) --> (B,32,1,H,W)
         )
@@ -50,9 +53,10 @@ class Temporal3DCNN(nn.Module):
         return x
 
 '''
-input_tensor = torch.randn(1,5,1080,1920,1)
+input_tensor = torch.randn(1,5,1,1080,1920)
 model = Temporal3DCNN()
 output = model(input_tensor)
 num_params = sum(p.numel() for p in model.parameters())
 print(f"Number of parameters: {num_params}")
+
 '''

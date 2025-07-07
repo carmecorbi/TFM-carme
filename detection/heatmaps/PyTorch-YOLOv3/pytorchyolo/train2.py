@@ -10,7 +10,7 @@ import torch
 import wandb
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from pytorchyolo.custom_cnn import  Temporal3DCNN
+from pytorchyolo.custom_cnn2 import  Temporal3DCNN
 from pytorchyolo.models import load_model
 from pytorchyolo.utils.logger import Logger
 from pytorchyolo.utils.utils import to_cpu, load_classes, print_environment_info, worker_seed_set
@@ -19,7 +19,7 @@ from pytorchyolo.utils.augmentations import AUGMENTATION_TRANSFORMS
 #from pytorchyolo.utils.transforms import DEFAULT_TRANSFORMS
 from pytorchyolo.utils.parse_config import parse_data_config
 from pytorchyolo.utils.loss import compute_loss
-from pytorchyolo.test import _evaluate2, _create_validation_data_loader2
+from pytorchyolo.test2 import _evaluate2, _create_validation_data_loader2
 import time
 from torch.cuda.amp import GradScaler, autocast
 from terminaltables import AsciiTable
@@ -68,10 +68,44 @@ def _create_data_loader(img_path, batch_size, img_size, n_cpu, multiscale_traini
         worker_init_fn=worker_seed_set)
     return dataloader
 
+def evaluate_and_log(model, heatmap,dataloader, class_names, split_name, epoch, args, log_losses=True):
+    iou_loss, obj_loss, cls_loss, total_loss = _evaluate2(
+        model,
+        heatmap,
+        dataloader,
+        class_names,
+        img_size=model.hyperparams['height'],
+        iou_thres=args.iou_thres,
+        conf_thres=args.conf_thres,
+        nms_thres=args.nms_thres,
+        verbose=args.verbose
+    )
+
+    print(f"\n---- Evaluation on {split_name.upper()} ----")
+    # Initialize the data structures
+    table_data = [
+        ["Metric", "Value"],
+        [f"{split_name.capitalize()} IoU Loss", iou_loss],
+        [f"{split_name.capitalize()} Obj Loss", obj_loss],
+        [f"{split_name.capitalize()} Cls Loss", cls_loss],
+        [f"{split_name.capitalize()} Total Loss", total_loss],
+    ]
+    
+    # Prepare log dict
+    log_dict = {
+        "epoch": epoch,
+        f"{split_name}/iou_loss": iou_loss,
+        f"{split_name}/obj_loss": obj_loss,
+        f"{split_name}/cls_loss": cls_loss,
+        f"{split_name}/total_loss": total_loss,
+    }
+
+    print(AsciiTable(table_data).table)
+    wandb.log(log_dict)
 
 def run(args):
       # Redirect all prints to a file
-    log_file = open("YOLOv3-channels5-copy.txt", "w")
+    log_file = open("YOLOv3-channels5-copy-singleclass-dataset-extendedcnn.txt", "w")
     sys.stdout = log_file
     sys.stderr = log_file  # Optional: also redirect errors
     print_environment_info()
@@ -98,21 +132,20 @@ def run(args):
 
     logger = Logger(args.logdir)  # Tensorboard logger
     
-    wandb.init(project="YOLOv3-channels5-copy", config=args)
-    wandb.define_metric("batch/*", step_metric="batches_done")
+    wandb.init(project="YOLOv3-baseline-new", config=args)
+    wandb.define_metric("batch/*", step_metric="batches_global")
 
     # Defineix mètriques per epoch amb un step diferent
-    wandb.define_metric("epoch/*", step_metric="epoch")
-    wandb.define_metric("validation/*", step_metric="epoch")
+    for split in ["train", "validation", "test"]:
+        wandb.define_metric(f"{split}/*", step_metric="epoch")
 
-    # Create output directories if missing
-    os.makedirs("output", exist_ok=True)
-    os.makedirs("YOLOv3-channels5-copy", exist_ok=True)
+    os.makedirs("YOLOv3-channels5-copy-singleclass-dataset-extendedcnn", exist_ok=True)
 
     # Get data configuration
     data_config = parse_data_config(args.data)
     train_path = data_config["train"]
     valid_path = data_config["valid"]
+    test_path = data_config["test"]
     class_names = load_classes(data_config["names"])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('device',device)
@@ -142,7 +175,7 @@ def run(args):
         model.hyperparams['height'],
         args.n_cpu,
         args.multiscale_training,
-        '/data-fast/data-server/ccorbi/ball/heatmaps')
+        '/data-fast/data-server/ccorbi/ball_singleclass/heatmaps')
 
     # Load validation dataloader
     validation_dataloader = _create_validation_data_loader2(
@@ -150,8 +183,14 @@ def run(args):
         mini_batch_size,
         model.hyperparams['height'],
         args.n_cpu,
-        '/data-fast/data-server/ccorbi/ball/heatmaps'
+        '/data-fast/data-server/ccorbi/ball_singleclass/heatmaps'
         )
+    test_dataloader = _create_validation_data_loader2(
+        test_path,
+        mini_batch_size,
+        model.hyperparams['height'],
+        args.n_cpu,
+        '/data-fast/data-server/ccorbi/ball_singleclass/heatmaps')
 
     # ################
     # Create optimizer
@@ -178,7 +217,8 @@ def run(args):
     # e.g. when you stop after 30 epochs and evaluate every 10 epochs then the evaluations happen after: 10,20,30
     # instead of: 0, 10, 20
     start_time = time.time()
-
+    lr = model.hyperparams['learning_rate']
+    batches_global = 1
     for epoch in range(1, args.epochs+1):
         epoch_iou_loss = 0.0
         epoch_obj_loss = 0.0
@@ -190,7 +230,7 @@ def run(args):
         heatmap.train()
      
         for batch_i, (paths, imgs, targets, heatmap_lefts, heatmap_rights) in enumerate(tqdm.tqdm(dataloader, desc=f"Training Epoch {epoch}")):
-            batches_done = len(dataloader) * epoch + batch_i
+            batches_done = len(dataloader) * (epoch-1) + batch_i
 
             imgs = imgs.to(device, non_blocking=True)
             heatmap_lefts = heatmap_lefts.to(device)
@@ -261,7 +301,8 @@ def run(args):
                 "batch/obj_loss": float(loss_components[1]),
                 "batch/class_loss": float(loss_components[2]),
                 "batch/loss": to_cpu(loss).item(),
-                "batches_done": batches_done 
+                "batch/learning_rate": lr,
+                "batches_global": batches_global 
         
             })
             epoch_iou_loss += float(loss_components[0])
@@ -270,6 +311,7 @@ def run(args):
             epoch_total_loss += to_cpu(loss).item()
 
             model.seen += imgs.size(0)
+            batches_global += 1 
 
         # #############
         # Save progress
@@ -286,17 +328,17 @@ def run(args):
         print(f"Total Loss: {avg_total_loss:.4f}\n")
 
         wandb.log({
-            "epoch/iou_loss": avg_iou_loss,
-            "epoch/obj_loss": avg_obj_loss,
-            "epoch/class_loss": avg_cls_loss,
-            "epoch/total_loss": avg_total_loss,
+            "train/iou_loss": avg_iou_loss,
+            "train/obj_loss": avg_obj_loss,
+            "train/class_loss": avg_cls_loss,
+            "train/total_loss": avg_total_loss,
             "epoch": epoch 
         })
 
         # Save model to checkpoint file
         if epoch % args.checkpoint_interval == 0:
-            checkpoint_path = f"YOLOv3-channels5-copy/yolov3_ckpt_{epoch}.pth"
-            checkpoint_path2 = f"YOLOv3-channels5-copy/heatmap_ckpt_{epoch}.pth"
+            checkpoint_path = f"YOLOv3-channels5-copy-singleclass-dataset-extendedcnn/yolov3_ckpt_{epoch}.pth"
+            checkpoint_path2 = f"YOLOv3-channels5-copy-singleclass-dataset-extendedcnn/heatmap_ckpt_{epoch}.pth"
             print(f"---- Saving checkpoint to: '{checkpoint_path}' ----")
             torch.save(model.state_dict(), checkpoint_path)
             torch.save(heatmap.state_dict(), checkpoint_path2)
@@ -307,42 +349,9 @@ def run(args):
 
         if epoch % args.evaluation_interval == 0:
             print("\n---- Evaluating Model ----")
-            # Evaluate the model on the validation set
-            precision, recall, AP, f1, ap_class,avg_iou_loss, avg_obj_loss, avg_cls_loss, avg_total_loss = _evaluate2(
-                model,
-                heatmap,
-                validation_dataloader,
-                class_names,
-                img_size=model.hyperparams['height'],
-                iou_thres=args.iou_thres,
-                conf_thres=args.conf_thres,
-                nms_thres=args.nms_thres,
-                verbose=args.verbose
-            )
-
-            print(AsciiTable([
-                ["Metric", "Value"],
-                ["Precision", precision.mean()],
-                ["Recall", recall.mean()],
-                ["mAP", AP.mean()],
-                ["F1", f1.mean()],
-                ["Val IoU Loss", avg_iou_loss],
-                ["Val Obj Loss", avg_obj_loss],
-                ["Val Cls Loss", avg_cls_loss],
-                ["Val Total Loss", avg_total_loss],
-            ]).table)
-
-            wandb.log({
-                "validation/precision": precision.mean(),
-                "validation/recall": recall.mean(),
-                "validation/mAP": AP.mean(),
-                "validation/f1": f1.mean(), 
-                "validation/val_iou_loss": avg_iou_loss,
-                "validation/val_obj_loss": avg_obj_loss,
-                "validation/val_cls_loss": avg_cls_loss,
-                "validation/val_total_loss": avg_total_loss,
-                "epoch": epoch 
-            })
+            evaluate_and_log(model, heatmap,validation_dataloader, class_names, "validation", epoch, args)
+            evaluate_and_log(model, heatmap,test_dataloader, class_names, "test", epoch, args)
+            
               
 
     end_time = time.time()
@@ -355,8 +364,8 @@ def run(args):
 
 class Args:
     def __init__(self):
-        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-original2.cfg"
-        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom.data"
+        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass2.cfg"
+        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom_singleclass.data"
         self.epochs = 50
         self.verbose = False
         self.n_cpu = 4

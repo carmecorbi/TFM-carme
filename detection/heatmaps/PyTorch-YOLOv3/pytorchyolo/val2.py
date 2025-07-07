@@ -21,14 +21,14 @@ from pytorchyolo.utils.augmentations import AUGMENTATION_TRANSFORMS
 from pytorchyolo.utils.parse_config import parse_data_config
 from pytorchyolo.utils.loss import compute_loss
 from pytorchyolo.test import _evaluate2, _create_validation_data_loader2
-from pytorchyolo.custom_cnn import  Temporal3DCNN
+from pytorchyolo.custom_cnn_original import  Temporal3DCNNO
 from terminaltables import AsciiTable
 
 from torchsummary import summary
 
 def main():
-    conf_thresholds = [0.1, 0.01, 0.001]
-    nms_thresholds = [0.3, 0.5, 0.7]
+    conf_thresholds = [0.001]
+    nms_thresholds = [0.7]
 
     for conf in conf_thresholds:
         for nms in nms_thresholds:
@@ -36,9 +36,9 @@ def main():
             args.conf_thres = conf
             args.nms_thres = nms
             # Update output file name dynamically
-            log_filename = f"validation_output_conf{conf}_nms{nms}.txt"
+            log_filename = f"test_output_conf{conf}_nms{nms}.txt"
             log_path = os.path.join(
-                "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-he-validation",
+                "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/results_49/he/test",
                 log_filename
             )
             validate_only_with_logpath(args, log_path)
@@ -55,20 +55,17 @@ def validate_only_with_logpath(args, log_path):
     logger = Logger(args.logdir)
 
     data_config = parse_data_config(args.data)
-    valid_path = data_config["valid"]
+    valid_path = data_config["test"]
     class_names = load_classes(data_config["names"])
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
 
-    model = load_model(args.model, args.pretrained_weights)
+    model = load_model(args.model, args.pretrained_weights,'he')
     model.to(device)
-    heatmap = Temporal3DCNN().to(device)
-    checkpoint_path = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-channels5-he/heatmap_ckpt_7.pth"
+    heatmap = Temporal3DCNNO().to(device)
+    checkpoint_path = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-channels5-he-singleclass-dataset/heatmap_ckpt_49.pth"
     checkpoint = torch.load(checkpoint_path, map_location=device)
     heatmap.load_state_dict(checkpoint)
-
-
-
     mini_batch_size = model.hyperparams['batch'] // model.hyperparams['subdivisions']
 
     validation_dataloader = _create_validation_data_loader2(
@@ -76,7 +73,7 @@ def validate_only_with_logpath(args, log_path):
         mini_batch_size,
         model.hyperparams['height'],
         args.n_cpu,
-        '/data-fast/data-server/ccorbi/ball/heatmaps'
+        '/data-fast/data-server/ccorbi/ball_singleclass/heatmaps'
         )
 
     print("\n---- Running validation ----")
@@ -105,11 +102,11 @@ def validate_only_with_logpath(args, log_path):
 
 class Args:
     def __init__(self):
-        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-original2.cfg"
-        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom.data"
+        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass2.cfg"
+        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom_singleclass.data"
         self.verbose = True
         self.n_cpu = 4
-        self.pretrained_weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-channels5-he/yolov3_ckpt_7.pth"
+        self.pretrained_weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-channels5-he-singleclass-dataset/yolov3_ckpt_49.pth"
         self.iou_thres = 0.5
         self.logdir = "logs"
         self.seed = 42

@@ -471,10 +471,22 @@ def load_model(model_path, weights_path=None,init_mode='random'):
     if weights_path:
         if weights_path.endswith(".pth"):
             # Load checkpoint weights
+            # Carrega el diccionari de pesos
+            state_dict = torch.load(weights_path, map_location=device)
+
+            # 🔍 Printar claus que espera el model
+            print("\n🔧 Claus que espera el model:")
+            for k in model.state_dict().keys():
+                print(" -", k)
+
+            # 🔍 Printar claus disponibles als pesos carregats
+            print("\n📦 Claus disponibles als pesos:")
+            for k in state_dict.keys():
+                print(" +", k)
             model.load_state_dict(torch.load(weights_path, map_location=device))
         else:
             # Load darknet weights
             #print('deviceeeee',device)
-            model.load_darknet_weights(weights_path)
-            #model.load_darknet_weights2(weights_path,init_mode=init_mode)
+            #model.load_darknet_weights(weights_path)
+            model.load_darknet_weights2(weights_path,init_mode=init_mode)
     return model

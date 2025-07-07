@@ -27,7 +27,7 @@ from terminaltables import AsciiTable
 from torchsummary import summary
 def main():
     conf_thresholds = [0.1, 0.01, 0.001]
-    nms_thresholds = [0.3, 0.5, 0.7]
+    nms_thresholds = [0.7]
 
     for conf in conf_thresholds:
         for nms in nms_thresholds:
@@ -37,7 +37,7 @@ def main():
             # Update output file name dynamically
             log_filename = f"validation_output_conf{conf}_nms{nms}.txt"
             log_path = os.path.join(
-                "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline-validation",
+                "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline-singleclass-validation",
                 log_filename
             )
             validate_only_with_logpath(args, log_path)
@@ -97,11 +97,11 @@ def validate_only_with_logpath(args, log_path):
 
 class Args:
     def __init__(self):
-        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-original.cfg"
-        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom.data"
+        self.model = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass.cfg"
+        self.data = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/custom_singleclass.data"
         self.verbose = True
         self.n_cpu = 4
-        self.pretrained_weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline/yolov3_ckpt_16.pth"
+        self.pretrained_weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline-singleclass/yolov3_ckpt_11.pth"
         self.iou_thres = 0.5
         self.logdir = "logs"
         self.seed = 42

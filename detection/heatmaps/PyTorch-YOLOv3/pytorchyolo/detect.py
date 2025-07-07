@@ -122,7 +122,7 @@ def detect(model, dataloader, output_path, conf_thres, nms_thres):
 
     model.eval()  # Set model to evaluation mode
 
-    device = torch.device("cuda:5" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:7" if torch.cuda.is_available() else "cpu")
 
     img_detections = []  # Stores detections for each image index
     imgs = []  # Stores image paths
@@ -134,8 +134,8 @@ def detect(model, dataloader, output_path, conf_thres, nms_thres):
 
         # Get detections
         with torch.no_grad():
-            detections = model(input_imgs)
-            detections = non_max_suppression(detections, conf_thres, nms_thres)
+            outputs1,outputs2 = model(input_imgs)
+            detections = non_max_suppression(outputs1, conf_thres, nms_thres)
 
         # Store image and detections
         img_detections.extend(detections)
@@ -196,30 +196,28 @@ def _draw_and_save_output_image2(image_path, detections, img_size, output_path, 
 
     # Select detection with highest confidence
     detections = detections[detections[:, 4].argsort(descending=True)]  # sort by confidence
-    best_detection = detections[0]  # detection with highest score
+    for det in detections:
+        x1, y1, x2, y2, conf, cls_pred = det.tolist()
+        cls_id = int(cls_pred)
+        color = "red" if cls_id == 1 else "blue"
 
-    x1, y1, x2, y2, conf, cls_pred = best_detection.tolist()
+        print(f"Detection: {classes[cls_id]} | Confidence: {conf:.4f}")
 
-    # Use fixed color depending on class (optional: can keep random if you prefer)
-    color = "red" if int(cls_pred) == 1 else "blue"
+        # Draw the bounding box
+        box_w = x2 - x1
+        box_h = y2 - y1
+        bbox = patches.Rectangle((x1, y1), box_w, box_h, linewidth=2, edgecolor=color, facecolor="none")
+        ax.add_patch(bbox)
 
-    print(f"Best detection: {classes[int(cls_pred)]} | Confidence: {conf:.4f}")
-
-    # Draw the bounding box
-    box_w = x2 - x1
-    box_h = y2 - y1
-    bbox = patches.Rectangle((x1, y1), box_w, box_h, linewidth=2, edgecolor=color, facecolor="none")
-    ax.add_patch(bbox)
-
-    # Add label
-    plt.text(
-        x1,
-        y1,
-        s=f"{classes[int(cls_pred)]}: {conf:.2f}",
-        color="white",
-        verticalalignment="top",
-        bbox={"color": color, "pad": 0}
-    )
+        # Add label
+        plt.text(
+            x1,
+            y1,
+            s=f"{classes[cls_id]}: {conf:.2f}",
+            color="white",
+            verticalalignment="top",
+            bbox={"color": color, "pad": 0}
+        )
 
     # Final image saving
     plt.axis("off")
@@ -335,17 +333,17 @@ def run():
     print(f"Command line arguments: {args}")
 
     # Extract class names from file
-    classes = '/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/data/coco.names'  # List of class names
+    classes = '/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/data/class.names'  # List of class names
     classes = load_classes(classes)  
     args.images = '/data-fast/data-server/ccorbi/examples'
-    args.model =  "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-original.cfg"
-    args.weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/checkpoints_YOLOv3_3channels/yolov3_ckpt_27.pth" 
-    args.out = '/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/inference_YOLOv3'
+    args.model =  "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/config/yolov3-singleclass.cfg"
+    args.weights = "/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/YOLOv3-baseline-singleclass-lr/yolov3_ckpt_38.pth" 
+    args.output = '/home-net/ccorbi/detection/heatmaps/PyTorch-YOLOv3/inference_test_examples'
     args.img_size = 608
     args.batch_size = 1
     args.n_cpu = 8
     args.conf_thres = 0.001
-    args.nms_thres = 0.5
+    args.nms_thres = 0.3
     print(f"Command line arguments: {args}")
     detect_directory(
         args.model,
