@@ -102,3 +102,16 @@ python main.py \
 
 
 ### Configuration Arguments
+Training parameters are defined using an `argsparse.ArgumentParser` in `detr/main.py`. Bellow are the main configurable options:
+- `batch_size`: Number of samples per training batch.
+- `num_workers`: Number of subprocesses for data loading.
+- `device`: Device used for training.
+- `output_dir`: Directory where checkpoints and longs will be saved.
+- `dataset_file`: Dataset type to use (`own` for baseline or `players` for player-aware model).
+- `coco_path`: Path to the root of the dataset directory.
+- `resume`: Path to pretrained DETR weights.
+- `epochs`; Number of training epochs.
+- `num_queries`: Number of query slots for object detection.
+- `lr`: Learning rate for the transformer.
+- `lr_backbone`: Learning rate for the backbone.
+
