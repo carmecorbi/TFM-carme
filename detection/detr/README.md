@@ -68,3 +68,7 @@ The decoder produces a tensor of shape `[6,1,27,256]` where:
 - `256`: embedding dimension.
 
 We retain only the first 5 embeddings corresponding to the object queries. 
+
+## Training
+
+### Configuration Arguments
