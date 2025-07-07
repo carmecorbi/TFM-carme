@@ -5,3 +5,7 @@ Building upon our previous approach that leverages player heatmaps for ball dete
 
 ## Data Conversion
 The original dataset uses YOLO format. However, DETR requires COCO format. 
+
+## Pipeline Overview
+![BallDetection2](https://github.com/user-attachments/assets/13fda4ae-185a-4d7c-97f5-87cc7ac93415)
+
