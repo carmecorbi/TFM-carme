@@ -83,7 +83,8 @@ Two different training configurations are available depending on whether player 
   --epochs 50 \
   --resume /home-net/ccorbi/detection/detr/detr/detr-r50-e632da11.pth \
   --num_queries 5
-```
+  ```
+  
 - Player Context (DETR + Team/Player Embeddings): Trains the modified DETR model with support for team/player context and positional embeddings:
 
 ```bash
