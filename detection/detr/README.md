@@ -16,6 +16,29 @@ Instead of relying only on learnable object queries, we inject player positional
 ![BallDetection2](https://github.com/user-attachments/assets/13fda4ae-185a-4d7c-97f5-87cc7ac93415)
 
 ### 1. Player Position Embeddings
+To incorporate player positional information into the transformer decoder, it was necessary to extend the COCO dataset format with player annotations (team and bounding boxes) for each frame.
+
+For this, we created a custom dataset loader in: `detr/datasets/coco_own.py`
+
+Loading tracking data and player-team assignment:
+
+Using the gameinfo.ini files, the function load_tracking_info() maps each track ID to its corresponding team (0 = left, 1 = right).
+
+Loading player bounding boxes per frame:
+
+The function load_players() reads the tracking ground truth (gt.txt) and extracts normalized player bounding boxes, their team, and center coordinates for each frame.
+
+Extending COCO annotations:
+
+The custom dataset class CocoDetection (subclassing torchvision.datasets.CocoDetection) overrides __getitem__ to:
+
+Load the original COCO image and annotations
+
+Identify sequence and frame number from the image filename
+
+Load player annotations via the tracking data functions
+
+Add the player information to the annotation dictionary under the key "players"
 Player bounding boxes (from both teams) are used to extract (x, y) center positions. Coordinates are normalized to [0, 1]. Passed through a linear layer to project into the same embedding space (256-d). 
 
 ### 2. Handling Variable Number of Players
