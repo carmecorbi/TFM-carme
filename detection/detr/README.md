@@ -31,12 +31,22 @@ Key Components:
   1. Load the original COCO image and annotations.
   2. Parse the sequence name and frame number from the image filename.
   3. Use the tracking data to retrieve player positions for that frame.
-  4. Add the player information under a new key in the `target` dictionary: `target["players"] = List[Dict[bbox, center, team]]`
-
-
-Player bounding boxes (from both teams) are used to extract (x, y) center positions. Coordinates are normalized to [0, 1]. Passed through a linear layer to project into the same embedding space (256-d). 
+  4. Add the player information under a new key in the `target` dictionary: `target["players"] = List[Dict[bbox, center, team]]`.
 
 ### 2. Handling Variable Number of Players
+To handle the variable number of playersper frame, we apply fixed-length padding so that each input has a consistent shape. Each team can have up to 11 players, so player bounding boxes are padded to a shape of `[batch_size,11,4]` per team (`4 = [x,y,w,h]`).
+
+Key Components:
+- Padding and Preprocessing: We define a function `pad_to_max_len()` that takes lists of bounding boxes for each sample and returns padded tensors with a fixed number of players slots (11). This is done separately for each team.
+- Modifications in `train_one_epoch()` and `evaluate()`: Both functions in `detr/engine.py` were updated to:
+  1. Check if the `dataset_file is "players".
+  2. Extract player bounding boxes per team from the `targets` in each batch.
+  3. Apply the `pad_to_max_len()` function to produce fixed-shape tensors `bb_a` and `bb_b`.
+  4. Pass these padded tensors as new arguments to the model.
+- Transformer Decoder Integration: In `detr/models/transformer.py`, the `Transformer` class is extended to support the additional inputs:
+  - `bb_a` and `bb_b` are passed through a shared linear projection layer to map them to the decoder dimension: `[batch_size,11,d_model]`.
+  - These are permuted to `[11, batch_size, d_model]` and concatenated with the initial decoder target (`tgt`) along the sequence dimension.
+  - Final `tgt` shape: `[num_queries + 11 + 11, batch_size, d_model]`.
 
 ### 3. Team Embeddings
 
