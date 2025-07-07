@@ -12,5 +12,13 @@ python convert_coco.py
 ```
 
 ## Pipeline Overview
+Instead of relying only on learnable object queries, we inject player positional information directly into the decoder of DETR, providing strong contextual cues for ball detection.
 ![BallDetection2](https://github.com/user-attachments/assets/13fda4ae-185a-4d7c-97f5-87cc7ac93415)
+
+### 1. Player Position Embeddings
+Player bounding boxes (from both teams) are used to extract (x, y) center positions. Coordinates are normalized to [0, 1]. Passed through a linear layer to project into the same embedding space (256-d). 
+
+### 2. Handling Variable Number of Players
+
+### 3. Team Embeddings
 
