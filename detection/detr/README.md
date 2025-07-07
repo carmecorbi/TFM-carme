@@ -60,3 +60,11 @@ Key Modifications: During the forward pass of the transformer (`detr/models/tran
 1. Learnable team tokens are retrived and expanded for each player slot.
 2. The original object query embeddings (`query_embed`) are also expanded.
 3. All embeddings are concatenated to form the full decoder input with shape: `[num_queries + 11 + 11, batch_size, d_model]`.
+
+The decoder produces a tensor of shape `[6,1,27,256]` where:
+- `6`: number of decoder layers
+- `1`: batch size
+- `27`: 5 object queries + 11 team A players + 11 team B players
+- `256`: embedding dimension.
+
+We retain only the first 5 embeddings corresponding to the object queries. 
