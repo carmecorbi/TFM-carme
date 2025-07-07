@@ -23,27 +23,17 @@ For this, we created a custom dataset loader in: `detr/datasets/coco_own.py`
 This loader extends `torchvision.datasets.CocoDetection` to support both COCO object annotations and additional player-related metadata derived from tracking files.
 
 Key Components:
-- Player Team Mapping: The function `load_tracking_info()` parses the `gameinfo.ini` file for each sequence to build a dictionary mapping each `track_id` to its corresponding team: 0 → left team and 1 → right team. 
+- Player Team Mapping: The function `load_tracking_info()` parses the `gameinfo.ini` file for each sequence to build a dictionary mapping each `track_id` to its corresponding team: 0 → left team and 1 → right team.
+  
+- Player Detection per Frame: The function `load_players` reads `gt.txt` and extracts all player detections for a specific frame. Each detection includes: Normalized bounding box coordinates `(x,y,w,h)`, Center point of the bounding box and Team identifier.
+  
+- COCO Annotation Augmentation: The custom `COCODetection` class overrides the `__getitem__` method to:
+  1. Load the original COCO image and annotations.
+  2. Parse the sequence name and frame number from the image filename.
+  3. Use the tracking data to retrieve player positions for that frame.
+  4. Add the player information under a new key in the `target dictionary`: `target["players"] = List[Dict[bbox, center, team]]`
 
-Loading tracking data and player-team assignment:
 
-Using the gameinfo.ini files, the function load_tracking_info() maps each track ID to its corresponding team (0 = left, 1 = right).
-
-Loading player bounding boxes per frame:
-
-The function load_players() reads the tracking ground truth (gt.txt) and extracts normalized player bounding boxes, their team, and center coordinates for each frame.
-
-Extending COCO annotations:
-
-The custom dataset class CocoDetection (subclassing torchvision.datasets.CocoDetection) overrides __getitem__ to:
-
-Load the original COCO image and annotations
-
-Identify sequence and frame number from the image filename
-
-Load player annotations via the tracking data functions
-
-Add the player information to the annotation dictionary under the key "players"
 Player bounding boxes (from both teams) are used to extract (x, y) center positions. Coordinates are normalized to [0, 1]. Passed through a linear layer to project into the same embedding space (256-d). 
 
 ### 2. Handling Variable Number of Players
