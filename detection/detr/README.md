@@ -22,6 +22,9 @@ For this, we created a custom dataset loader in: `detr/datasets/coco_own.py`
 
 This loader extends `torchvision.datasets.CocoDetection` to support both COCO object annotations and additional player-related metadata derived from tracking files.
 
+Key Components:
+- Player Team Mapping: The function `load_tracking_info()` parses the `gameinfo.ini` file for each sequence to build a dictionary mapping each `track_id` to its corresponding team: 0 → left team and 1 → right team. 
+
 Loading tracking data and player-team assignment:
 
 Using the gameinfo.ini files, the function load_tracking_info() maps each track ID to its corresponding team (0 = left, 1 = right).
